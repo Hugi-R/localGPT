@@ -167,5 +167,4 @@ cython_debug/
 .DS_Store
 SOURCE_DOCUMENTS/.DS_Store
 
-venv/
-.mambaenv
+models
