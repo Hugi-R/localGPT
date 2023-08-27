@@ -30,20 +30,16 @@ def load_model():
     If you are running this for the first time, it will download a model for you.
     subsequent runs will use the model from the disk.
 
-    Args:
-        conf (Config): a localGPT config dataclass
-
     Returns:
-        HuggingFacePipeline: A pipeline object for text generation using the loaded model.
+        LlamaCpp: A pipeline object for text generation using the loaded model.
 
     Raises:
-        ValueError: If an unsupported model or device type is provided.
+        ValueError: If an unsupported model is provided.
     """
     logging.info(f"Loading Model: {MODEL_PATH}, with {MODEL_GPU_LAYERS} gpu layers")
-    logging.info("This action can take a few minutes!")
+    logging.info("This action can take some time!")
 
     if MODEL_PATH is not None:
-        logging.info("Using Llamacpp for GGML quantized models")
         max_ctx_size = MODEL_MAX_CTX_SIZE
         max_token = min(512, MODEL_MAX_CTX_SIZE) # we limit the amount of generated token. We want the answer to be short.
         kwargs = {
@@ -59,7 +55,7 @@ def load_model():
         kwargs["temperature"] = MODEL_TEMPERATURE # default is 0.8, values between 0 and 1 doesn't affect much the result
         return LlamaCpp(**kwargs)
 
-    raise NotImplemented("No model provided")
+    raise ValueError("No model provided")
 
 
 # chose device typ to run on as well as to show source documents.
@@ -75,7 +71,7 @@ def main(show_sources):
     This function implements the information retrieval task.
 
 
-    1. Loads an embedding model, can be HuggingFaceBgeEmbeddings
+    1. Loads an embedding model, is HuggingFaceBgeEmbeddings
     2. Loads the existing vectorestore that was created by inget.py
     3. Loads the local LLM using load_model function - You can now set different LLMs.
     4. Setup the Question Answer retreival chain.
@@ -84,10 +80,11 @@ def main(show_sources):
 
     logging.info(f"Display Source Documents set to: {show_sources}")
 
-    embeddings = HuggingFaceBgeEmbeddings(model_name=EMBEDDING_MODEL_NAME, cache_folder="models/.cache", model_kwargs={"device": "cpu"})
-
-    # uncomment the following line if you used HuggingFaceEmbeddings in the ingest.py
-    # embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+    embeddings = HuggingFaceBgeEmbeddings(
+        model_name=EMBEDDING_MODEL_NAME,
+        cache_folder="models/.cache",
+        model_kwargs={"device": "cpu"} # Using cpu for embeddings does not appear to impact the user experience, but it free up VRAM for the LLM, wich is a big win.
+    )
 
     # load the vectorstore
     db = Chroma(
@@ -117,7 +114,6 @@ def main(show_sources):
         # Get the answer from the chain
         t_start = time.time()
         res = qa(query)
-        print()
         docs = res["source_documents"]
         t_end = time.time()
 
