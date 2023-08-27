@@ -1,43 +1,40 @@
 # localGPT
 
-This project was inspired by the original [privateGPT](https://github.com/imartinez/privateGPT). Most of the description here is inspired by the original privateGPT.
+This project is a fork of [localGPT](https://github.com/PromtEngineer/localGPT) (itself inspired by privateGPT). It use the latest models, and target computer without GPU, while still offering GPU support if you want.
 
-For detailed overview of the project, Watch these videos
-- [Detailed code-walkthrough](https://youtu.be/MlyoObdIHyo).
-- [Llama-2 with LocalGPT](https://youtu.be/lbFmceo4D5E)
-- [Adding Chat History](https://youtu.be/d7otIM_MCZs)
+Ask questions to your documents without an internet connection, using the power of LLMs. 100% private, no data leaves your execution environment at any point.!
 
-In this model, I have replaced the GPT4ALL model with Vicuna-7B model and we are using the InstructorEmbeddings instead of LlamaEmbeddings as used in the original privateGPT. Both Embeddings as well as LLM will run on GPU instead of CPU. It also has CPU support if you do not have a GPU (see below for instruction).
+Built with [LangChain](https://github.com/hwchase17/langchain) and [llama-cpp-python](https://github.com/abetlen/llama-cpp-python)
 
-Ask questions to your documents without an internet connection, using the power of LLMs. 100% private, no data leaves your execution environment at any point. You can ingest documents and ask questions without an internet connection!
-
-Built with [LangChain](https://github.com/hwchase17/langchain) and [Vicuna-7B](https://huggingface.co/TheBloke/vicuna-7B-1.1-HF) (+ alot more!) and [InstructorEmbeddings](https://instructor-embedding.github.io/)
+Two configurations are provided, choose one:
+* 13B: high quality answer, for higher-end computer, with at least 16GB of RAM and GPU recommanded.
+  * Embeddings: [BAAI/bge-large-en](https://huggingface.co/BAAI/bge-large-en) (MIT License)
+  * LLM: [TheBloke/OpenOrca-Platypus2-13B-GGML](https://huggingface.co/TheBloke/OpenOrca-Platypus2-13B-GGML) (CC BY-NC-4.0 and Llama 2)
+* 7B: good answer, for high-end computer, with 16GB of available RAM.
+  * Embeddings: [BAAI/bge-base-en](https://huggingface.co/BAAI/bge-large-en) (MIT License)
+  * LLM: [TheBloke/orca_mini_v3_7B-GGML](https://huggingface.co/TheBloke/orca_mini_v3_7B-GGML) (Llama 2)
 
 # Environment Setup
 
-Install conda
-
+Install [mamba](https://github.com/mamba-org/mamba), a fast and open alternative to conda.
 ```shell
-conda create -n localGPT
+mamba create -p .env python=3.11 -c conda-forge
 ```
 
 Activate
-
 ```shell
-conda activate localGPT
+conda activate .env
 ```
 
 In order to set your environment up to run the code here, first install all requirements:
-
 ```shell
 pip install -r requirements.txt
 ```
 
-
-If you want to use BLAS or Metal with [llama-cpp](<(https://github.com/abetlen/llama-cpp-python#installation-with-openblas--cublas--clblast--metal)>) you can set appropriate flags:
-
+Prompt evaluation is very slow on cpu, it's recommended to use a BLAS backend to speed things up.
+If you want to use BLAS or Metal with [llama-cpp-python](<(https://github.com/abetlen/llama-cpp-python#installation-with-openblas--cublas--clblast--metal)>) you can set appropriate flags:
 ```shell
-# Example: cuBLAS
+# Example: cuBLAS for NVIDIA GPU, required cuda-toolkit
 CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install -r requirements.txt
 ```
 
@@ -52,7 +49,7 @@ Run as `docker run -it --mount src="$HOME/.cache",target=/root/.cache,type=bind 
 
 ## Test dataset
 
-This repo uses a [Constitution of USA ](https://constitutioncenter.org/media/files/constitution.pdf) as an example.
+This repo uses as an example [What are embeddings](https://vickiboykis.com/what_are_embeddings/) by Vicki Boykis, licensed under a Creative Commons, By Attribution, Non-Commercial, Share Alike 3.0 license.
 
 ## Instructions for ingesting your own dataset
 
@@ -158,66 +155,6 @@ If you are still getting errors, try installing the latest llama-cpp-python with
 CMAKE_ARGS="-DLLAMA_METAL=on" FORCE_CMAKE=1 pip install -U llama-cpp-python --no-cache-dir
 ```
 
-# Run the UI
-
-1. Open `constants.py` in an editor of your choice and depending on choice add the LLM you want to use. By default, the following model will be used:
-
-   ```shell
-   MODEL_ID = "TheBloke/Llama-2-7B-Chat-GGML"
-   MODEL_BASENAME = "llama-2-7b-chat.ggmlv3.q4_0.bin"
-   ```
-
-3. Open up a terminal and activate your python environment that contains the dependencies installed from requirements.txt.
-
-4. Navigate to the `/LOCALGPT` directory.
-
-5. Run the following command `python run_localGPT_API.py`. The API should being to run.
-
-6. Wait until everything has loaded in. You should see something like `INFO:werkzeug:Press CTRL+C to quit`.
-
-7. Open up a second terminal and activate the same python environment.
-
-8. Navigate to the `/LOCALGPT/localGPTUI` directory.
-
-9. Run the command `python localGPTUI.py`.
-
-10. Open up a web browser and go the address `http://localhost:5111/`.
-
-# How does it work?
-
-Selecting the right local models and the power of `LangChain` you can run the entire pipeline locally, without any data leaving your environment, and with reasonable performance.
-
-- `ingest.py` uses `LangChain` tools to parse the document and create embeddings locally using `InstructorEmbeddings`. It then stores the result in a local vector database using `Chroma` vector store.
-- `run_localGPT.py` uses a local LLM to understand questions and create answers. The context for the answers is extracted from the local vector store using a similarity search to locate the right piece of context from the docs.
-- You can replace this local LLM with any other LLM from the HuggingFace. Make sure whatever LLM you select is in the HF format.
-
-# How to select different LLM models?
-
-The following will provide instructions on how you can select a different LLM model to create your response:
-
-1. Open up `constants.py` in the editor of your choice.
-2. Change the `MODEL_ID` and `MODEL_BASENAME`. If you are using a quantized model (`GGML`, `GPTQ`), you will need to provide `MODEL_BASENAME`. For unquatized models, set `MODEL_BASENAME` to `NONE`
-5. There are a number of example models from HuggingFace that have already been tested to be run with the original trained model (ending with HF or have a .bin in its "Files and versions"), and quantized models (ending with GPTQ or have a .no-act-order or .safetensors in its "Files and versions").
-6. For models that end with HF or have a .bin inside its "Files and versions" on its HuggingFace page.
-
-   - Make sure you have a model_id selected. For example -> `MODEL_ID = "TheBloke/guanaco-7B-HF"`
-   - If you go to its HuggingFace [repo](https://huggingface.co/TheBloke/guanaco-7B-HF) and go to "Files and versions" you will notice model files that end with a .bin extension.
-   - Any model files that contain .bin extensions will be run with the following code where the `# load the LLM for generating Natural Language responses` comment is found.
-   - `MODEL_ID = "TheBloke/guanaco-7B-HF"`
-
-7. For models that contain GPTQ in its name and or have a .no-act-order or .safetensors extension inside its "Files and versions on its HuggingFace page.
-
-   - Make sure you have a model_id selected. For example -> model_id = `"TheBloke/wizardLM-7B-GPTQ"`
-   - You will also need its model basename file selected. For example -> `model_basename = "wizardLM-7B-GPTQ-4bit.compat.no-act-order.safetensors"`
-   - If you go to its HuggingFace [repo](https://huggingface.co/TheBloke/wizardLM-7B-GPTQ) and go to "Files and versions" you will notice a model file that ends with a .safetensors extension.
-   - Any model files that contain no-act-order or .safetensors extensions will be run with the following code where the `# load the LLM for generating Natural Language responses` comment is found.
-   - `MODEL_ID = "TheBloke/WizardLM-7B-uncensored-GPTQ"`
-
-     `MODEL_BASENAME = "WizardLM-7B-uncensored-GPTQ-4bit-128g.compat.no-act-order.safetensors"`
-
-
-8. Comment out all other instances of `MODEL_ID="other model names"`, `MODEL_BASENAME=other base model names`, and `llm = load_model(args*)`
-
 # System Requirements
 
 ## Python Version
@@ -243,13 +180,9 @@ To install a C++ compiler on Windows 10/11, follow these steps:
 
 Follow this [page](https://linuxconfig.org/how-to-install-the-nvidia-drivers-on-ubuntu-22-04) to install NVIDIA Drivers.
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=PromtEngineer/localGPT&type=Date)](https://star-history.com/#PromtEngineer/localGPT&Date)
-
 # Disclaimer
 
-This is a test project to validate the feasibility of a fully local solution for question answering using LLMs and Vector embeddings. It is not production ready, and it is not meant to be used in production. Vicuna-7B is based on the Llama model so that has the original Llama license.
+This is a test project to validate the feasibility of a fully local solution for question answering using LLMs and Vector embeddings. It is not production ready, and it is not meant to be used in production. The LLM used are based on the Llama 2 model so they retain the original [Llama 2 license](https://github.com/facebookresearch/llama/blob/main/LICENSE).
 
 # Common Errors
 

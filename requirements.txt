@@ -1,32 +1,23 @@
-# Natural Language Processing
-langchain==0.0.191
-chromadb==0.3.22
-llama-cpp-python==0.1.77
-pdfminer.six==20221105
-InstructorEmbedding
+# Freeze these project as they tend to break stuff with update
+langchain==0.0.274 # there's a release every day, I don't have time for thsi
+chromadb==0.3.29 # Version 0.4 remove stuff used by this project
+llama-cpp-python==0.1.78 # version 0.1.79 only support GGUF, waiting a bit to let the paint dry for this new format
+
+# LLM related
 sentence-transformers
-faiss-cpu
 huggingface_hub
 transformers
-protobuf==3.20.0; sys_platform != 'darwin'
-protobuf==3.20.0; sys_platform == 'darwin' and platform_machine != 'arm64'
-protobuf==3.20.3; sys_platform == 'darwin' and platform_machine == 'arm64'
-auto-gptq==0.2.2
-docx2txt
-unstructured
+
+# Parsing documents
+unstructured # plain text files, HTML, XML, JSON and Emails. Unstructured support also other documents if you install the right dependencies https://pypi.org/project/unstructured/
+pdfminer.six==20221105 # PDF
+# openpyxl # Excel
+# docx2txt # docx
 
 # Utilities
-urllib3==1.26.6
-accelerate
-bitsandbytes ; sys_platform != 'win32'
-bitsandbytes-windows ; sys_platform == 'win32'
 click
-flask
-requests
-
-# Streamlit related
 streamlit
 Streamlit-extras
 
-# Excel File Manipulation
-openpyxl
+
+
