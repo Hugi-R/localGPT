@@ -168,3 +168,5 @@ cython_debug/
 SOURCE_DOCUMENTS/.DS_Store
 
 models
+SOURCE_DOCUMENTS/**
+!SOURCE_DOCUMENTS/embeddings.pdf
