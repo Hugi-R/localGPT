@@ -2,7 +2,7 @@
 
 This project is a fork of [localGPT](https://github.com/PromtEngineer/localGPT) (itself inspired by privateGPT). It use the latest models, and target computer without GPU, while still offering GPU support if you want.
 
-Ask questions to your documents without an internet connection, using the power of LLMs. 100% private, no data leaves your execution environment at any point.!
+Ask questions to your documents without an internet connection, using the power of LLMs. 100% private, no data leaves your execution environment at any point.
 
 Built with [LangChain](https://github.com/hwchase17/langchain) and [llama-cpp-python](https://github.com/abetlen/llama-cpp-python)
 
@@ -23,7 +23,7 @@ mamba create -p .env python=3.11 -c conda-forge
 
 Activate
 ```shell
-conda activate .env
+mamba activate .env
 ```
 
 In order to set your environment up to run the code here, first install all requirements:
@@ -100,29 +100,14 @@ And wait for the script to require your input.
 
 Hit enter. Wait while the LLM model consumes the prompt and prepares the answer. Once done, it will print the answer and the 4 sources it used as context from your documents; you can then ask another question without re-running the script, just wait for the prompt again.
 
-Note: When you run this for the first time, it will need internet connection to download the vicuna-7B model. After that you can turn off your internet connection, and the script inference would still work. No data gets out of your local environment.
+Note: When you run this for the first time, it will need internet connection to download the model. After that you can turn off your internet connection, and the script inference would still work. No data gets out of your local environment.
 
 Type `exit` to finish the script.
 
-# Run it on CPU
-
-By default, localGPT will use your GPU to run both the `ingest.py` and `run_localGPT.py` scripts. But if you do not have a GPU and want to run this on CPU, now you can do that (Warning: Its going to be slow!). You will need to use `--device_type cpu`flag with both scripts.
-
-For Ingestion run the following:
-
-```shell
-python ingest.py --device_type cpu
-```
-
-In order to ask a question, run a command like:
-
-```shell
-python run_localGPT.py --device_type cpu
-```
 
 # Run quantized for M1/M2:
 
-GGML quantized models for Apple Silicon (M1/M2) are supported through the llama-cpp library, [example](https://huggingface.co/TheBloke/Wizard-Vicuna-13B-Uncensored-GGML). GPTQ quantized models that leverage auto-gptq will not work, [see here](https://github.com/PanQiWei/AutoGPTQ/issues/133#issuecomment-1575002893). GGML models will work for CPU or MPS.
+GGML quantized models for Apple Silicon (M1/M2) are supported through the llama-cpp library, [example](https://huggingface.co/TheBloke/Wizard-Vicuna-13B-Uncensored-GGML).
 
 ## Troubleshooting
 
@@ -133,7 +118,7 @@ GGML quantized models for Apple Silicon (M1/M2) are supported through the llama-
 
 ```shell
 xcode-select --install
-conda install pytorch torchvision torchaudio -c pytorch-nightly
+mamba install pytorch torchvision torchaudio -c pytorch-nightly
 pip install chardet
 pip install cchardet
 pip uninstall charset_normalizer
@@ -152,7 +137,7 @@ pip install -r requirements.txt
 If you are still getting errors, try installing the latest llama-cpp-python with these flags, and [see thread](https://github.com/abetlen/llama-cpp-python/issues/317#issuecomment-1587962205).
 
 ```shell
-CMAKE_ARGS="-DLLAMA_METAL=on" FORCE_CMAKE=1 pip install -U llama-cpp-python --no-cache-dir
+pip install -U llama-cpp-python --no-cache-dir
 ```
 
 # System Requirements
@@ -188,23 +173,7 @@ This is a test project to validate the feasibility of a fully local solution for
 
  - [Torch not compatible with CUDA enabled](https://github.com/pytorch/pytorch/issues/30664)
 
-   -  Get CUDA version
-      ```shell
-      nvcc --version
-      ```
-      ```shell
-      nvidia-smi
-      ```
-   - Try installing PyTorch depending on your CUDA version
-      ```shell
-         conda install -c pytorch torchvision cudatoolkit=10.1 pytorch
-      ```
-   - If it doesn't work, try reinstalling
-      ```shell
-         pip uninstall torch
-         pip cache purge
-         pip install torch -f https://download.pytorch.org/whl/torch_stable.html
-      ```
+   - Follow Pytorch recommanded installation for your system: [https://pytorch.org/get-started/locally/]
 
 - [ERROR: pip's dependency resolver does not currently take into account all the packages that are installed](https://stackoverflow.com/questions/72672196/error-pips-dependency-resolver-does-not-currently-take-into-account-all-the-pa/76604141#76604141)
   ```shell
@@ -215,6 +184,6 @@ This is a test project to validate the feasibility of a fully local solution for
 - [Failed to import transformers](https://github.com/huggingface/transformers/issues/11262)
   - Try re-install
     ```shell
-       conda uninstall tokenizers, transformers
+       mamba uninstall tokenizers, transformers
        pip install transformers
     ```
