@@ -2,6 +2,7 @@ import logging
 import time
 
 import click
+import langchain
 from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceBgeEmbeddings
 from langchain.llms import LlamaCpp
@@ -20,9 +21,9 @@ from constants import (
     MODEL_STOP_SEQUENCE, 
     MODEL_PROMPT_TEMPLATE, 
     MODEL_GPU_LAYERS, 
-    MODEL_TEMPERATURE 
+    MODEL_TEMPERATURE,
+    MODEL_PREFIX
 )
-
 
 def load_model():
     """
@@ -57,29 +58,7 @@ def load_model():
 
     raise ValueError("No model provided")
 
-
-# chose device typ to run on as well as to show source documents.
-@click.command()
-@click.option(
-    "--show_sources",
-    "-s",
-    is_flag=True,
-    help="Show sources along with answers (Default is False)",
-)
-def main(show_sources):
-    """
-    This function implements the information retrieval task.
-
-
-    1. Loads an embedding model, is HuggingFaceBgeEmbeddings
-    2. Loads the existing vectorestore that was created by inget.py
-    3. Loads the local LLM using load_model function - You can now set different LLMs.
-    4. Setup the Question Answer retreival chain.
-    5. Question answers.
-    """
-
-    logging.info(f"Display Source Documents set to: {show_sources}")
-
+def setup_qa():
     embeddings = HuggingFaceBgeEmbeddings(
         model_name=EMBEDDING_MODEL_NAME,
         cache_folder="models/.cache",
@@ -95,7 +74,12 @@ def main(show_sources):
     retriever = db.as_retriever()
 
     prompt = PromptTemplate(input_variables=["history", "context", "question"], template=MODEL_PROMPT_TEMPLATE)
-    memory = ConversationBufferMemory(input_key="question", memory_key="history")
+    memory = ConversationBufferMemory(
+        input_key="question",
+        memory_key="history",
+        human_prefix=MODEL_PREFIX["human"],
+        ai_prefix=MODEL_PREFIX["ai"],
+    )
 
     llm = load_model()
 
@@ -106,6 +90,40 @@ def main(show_sources):
         return_source_documents=True,
         chain_type_kwargs={"prompt": prompt, "memory": memory},
     )
+    return qa
+
+# chose device typ to run on as well as to show source documents.
+@click.command()
+@click.option(
+    "--show_sources",
+    "-s",
+    is_flag=True,
+    help="Show sources along with answers (Default is False)",
+)
+@click.option(
+    "--debug",
+    "-d",
+    is_flag=True,
+    help="Show langcahin debug (Default is False)",
+)
+def main(show_sources, debug):
+    """
+    This function implements the information retrieval task.
+
+
+    1. Loads an embedding model, is HuggingFaceBgeEmbeddings
+    2. Loads the existing vectorestore that was created by inget.py
+    3. Loads the local LLM using load_model function - You can now set different LLMs.
+    4. Setup the Question Answer retreival chain.
+    5. Question answers.
+    """
+
+    langchain.debug=debug
+
+    logging.info(f"Display Source Documents set to: {show_sources}")
+
+    qa = setup_qa()
+
     # Interactive questions and answers
     while True:
         query = input("\nEnter a query: ")

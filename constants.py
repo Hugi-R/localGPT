@@ -48,8 +48,9 @@ DOCUMENT_MAP = {
 # MODEL_PATH = None # Set path the the model, if None it will download the model from HuggingFace
 # MODEL_MAX_CTX_SIZE = 4096
 # MODEL_STOP_SEQUENCE = ["###"]
-# MODEL_GPU_LAYERS = 25 # offload part of the model to GPU, improving slightly performance. If you have enought VRAM, you can offload the entire model for a significant speed boost.
+# MODEL_GPU_LAYERS = 25 # offload part of the model to GPU, improving slightly performance. If you have enought VRAM, you can offload the entire model for a significant speed boost. 25 layers should fit in 8GB of VRAM
 # MODEL_TEMPERATURE = 0.4
+# MODEL_PREFIX = {"human": "Question", "ai": "Response"}
 # MODEL_PROMPT_TEMPLATE = """### Instruction:
 # Use the following pieces of Context to answer the Question at the end. Take into acount the conversation History.
 # If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -57,7 +58,7 @@ DOCUMENT_MAP = {
 # Context:
 # {context}
 
-# History:
+# Conversation History:
 # {history}
 
 # Question:
@@ -75,6 +76,7 @@ MODEL_MAX_CTX_SIZE = 4096
 MODEL_STOP_SEQUENCE = ["###"]
 MODEL_GPU_LAYERS = 0
 MODEL_TEMPERATURE = 0.4
+MODEL_PREFIX = {"human": "User", "ai": "Assistant"}
 MODEL_PROMPT_TEMPLATE = """### System:
 Use the following pieces of Context to answer the the User at the end. Take into acount the conversation History.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -82,7 +84,7 @@ If you don't know the answer, just say that you don't know, don't try to make up
 Context:
 {context}
 
-History:
+Conversation History:
 {history}
 
 ### User:
