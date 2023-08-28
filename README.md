@@ -18,12 +18,12 @@ Two configurations are provided, choose one:
 
 Install [mamba](https://github.com/mamba-org/mamba), a fast and open alternative to conda.
 ```shell
-mamba create -p .env python=3.11 -c conda-forge
+mamba create -p ./.env python=3.11 -c conda-forge
 ```
 
 Activate
 ```shell
-mamba activate .env
+mamba activate ./.env
 ```
 
 In order to set your environment up to run the code here, first install all requirements:
@@ -36,6 +36,11 @@ If you want to use BLAS or Metal with [llama-cpp-python](<(https://github.com/ab
 ```shell
 # Example: cuBLAS for NVIDIA GPU, required cuda-toolkit
 CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install -r requirements.txt
+```
+If you forgot to enable it during the first pip install, you can do
+```shell
+pip uninstall llama-cpp-python
+CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install llama-cpp-python==0.1.78 --no-cache
 ```
 
 ## Docker
