@@ -9,6 +9,7 @@ from langchain.llms import LlamaCpp
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 
+from langchain.callbacks.base import BaseCallbackHandler
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import Chroma
 
@@ -25,7 +26,7 @@ from constants import (
     MODEL_PREFIX
 )
 
-def load_model():
+def load_model(lc_callback: BaseCallbackHandler = None):
     """
     Select a model for text generation using the HuggingFace library.
     If you are running this for the first time, it will download a model for you.
@@ -52,13 +53,16 @@ def load_model():
         kwargs["n_threads"] = 8
         kwargs["stop"] = MODEL_STOP_SEQUENCE
         kwargs["n_batch"] = 512 # faster prompt evaluation. It's important to speed it up because it contain the context
-        kwargs["callbacks"] = [StreamingStdOutCallbackHandler()]
+        kwargs["callbacks"] = [lc_callback]
         kwargs["temperature"] = MODEL_TEMPERATURE # default is 0.8, values between 0 and 1 doesn't affect much the result
         return LlamaCpp(**kwargs)
 
     raise ValueError("No model provided")
 
-def setup_qa():
+def setup_qa(lc_callback: BaseCallbackHandler = None):
+    if lc_callback is None:
+        lc_callback = StreamingStdOutCallbackHandler()
+
     embeddings = HuggingFaceBgeEmbeddings(
         model_name=EMBEDDING_MODEL_NAME,
         cache_folder="models/.cache",
@@ -81,7 +85,7 @@ def setup_qa():
         ai_prefix=MODEL_PREFIX["ai"],
     )
 
-    llm = load_model()
+    llm = load_model(lc_callback)
 
     qa = RetrievalQA.from_chain_type(
         llm=llm,
