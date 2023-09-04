@@ -1,7 +1,7 @@
 # Freeze these project as they tend to break stuff with update
 langchain==0.0.274 # there's a release every day, I don't have time for thsi
 chromadb==0.3.29 # Version 0.4 remove stuff used by this project
-llama-cpp-python==0.1.78 # version 0.1.79 only support GGUF, waiting a bit to let the paint dry for this new format
+ctransformers[cuda]==0.2.26
 
 # LLM related
 sentence-transformers

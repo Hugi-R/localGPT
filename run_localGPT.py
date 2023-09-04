@@ -5,7 +5,7 @@ import click
 import langchain
 from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceBgeEmbeddings
-from langchain.llms import LlamaCpp
+from langchain.llms import CTransformers
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 
@@ -44,18 +44,16 @@ def load_model(lc_callback: BaseCallbackHandler = None):
     if MODEL_PATH is not None:
         max_ctx_size = MODEL_MAX_CTX_SIZE
         max_token = min(512, MODEL_MAX_CTX_SIZE) # we limit the amount of generated token. We want the answer to be short.
-        kwargs = {
-            "model_path": MODEL_PATH,
-            "n_ctx": max_ctx_size,
-            "max_tokens": max_token, 
+        config = {
+            "context_length": max_ctx_size,
+            "max_new_tokens": max_token, 
         }
-        kwargs["n_gpu_layers"] = MODEL_GPU_LAYERS
-        kwargs["n_threads"] = 8
-        kwargs["stop"] = MODEL_STOP_SEQUENCE
-        kwargs["n_batch"] = 512 # faster prompt evaluation. It's important to speed it up because it contain the context
-        kwargs["callbacks"] = [lc_callback]
-        kwargs["temperature"] = MODEL_TEMPERATURE # default is 0.8, values between 0 and 1 doesn't affect much the result
-        return LlamaCpp(**kwargs)
+        config["gpu_layers"] = MODEL_GPU_LAYERS
+        config["threads"] = 8
+        config["stop"] = MODEL_STOP_SEQUENCE
+        config["batch_size"] = 512 # faster prompt evaluation. It's important to speed it up because it contain the context
+        config["temperature"] = MODEL_TEMPERATURE # default is 0.8, values between 0 and 1 doesn't affect much the result
+        return CTransformers(model=MODEL_PATH, callbacks=[lc_callback], model_type="llama", config=config)
 
     raise ValueError("No model provided")
 
